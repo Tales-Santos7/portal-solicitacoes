@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Category {
+  TI
+  RH
+  COMPRAS
+  FINANCEIRO
+  INFRAESTRUTURA
+}
+
+enum RequestStatus {
+  ABERTO
+  EM_ATENDIMENTO
+  CONCLUIDO
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  username     String      @unique
+  passwordHash String      @map("password_hash")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  requests     Request[]
+
+  @@map("users")
+}
+
+model Request {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  category    Category
+  status      RequestStatus @default(ABERTO)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  userId      Int           @map("user_id")
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@map("requests")
+}
